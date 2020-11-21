@@ -109,7 +109,7 @@ jobs:
               # --stack-name "your back-end stack name with workflow id" \	
               # --parameter-overrides ID="your workflow id"  	
               exit 1	
-      - run:	
+      - run:
           name: Ensure front-end infrastructure exist	
           command: |
             aws cloudformation deploy \	
@@ -120,7 +120,7 @@ jobs:
               exit 1	
       - run:
           name: Add back-end ip to ansible inventory	
-          command: |	
+          command: |
             # Your code here	
             exit 1	
       - persist_to_workspace:	
@@ -129,100 +129,100 @@ jobs:
             - project/.circleci/ansible/inventory.txt	
       # Here's where you will add some code to rollback on failure      	
 
-  configure-infrastructure:	
+  configure-infrastructure:
     docker:	
       # Docker image here that supports Ansible	
-    steps:	
+    steps:
       # Checkout code from git	
       # Add ssh keys with fingerprint	
       # attach workspace	
-      - run:	
+      - run:
           name: Install dependencies	
-          command: |	
+          command: |
             # Your code here	
             exit 1	
-      - run:	
+      - run:
           name: Configure server	
-          command: |	
+          command: |
             # Your code here	
             exit 1	
       # Here's where you will add some code to rollback on failure      	
 
-  run-migrations:	
-    docker:	
+  run-migrations:
+    docker:
       # Docker image here that supports NodeJS	
-    steps:	
+    steps:
       # Checkout code from git	
-      - run:	
+      - run:
           name: Run migrations	
-          command: |	
+          command: |
             # Your code here	
             exit 1	
-      - run:	
+      - run:
           name: Send migration results to memstash	
           command: |	
-            # Your code here	
+            # Your code here
             exit 1	
      # Here's where you will add some code to rollback on failure      	
 
-  deploy-frontend:	
-    docker:	
+  deploy-frontend:
+    docker:
       # Docker image here that supports AWS CLI	
-    steps:	
+    steps:
       # Checkout code from git	
-      - run:	
-          name: Install dependencies	
-          command: |	
+      - run:
+          name: Install dependencies
+          command: |
             # your code here	
-      - run:	
+      - run:
           name: Get backend url	
-          command: |	
-            # your code here	
+          command: |
+            # your code here
             export API_URL="http://${BACKEND_IP}:3030"	
             echo "${API_URL}"	
-      - run:	
+      - run:
           name: Deploy frontend objects	
-          command: |	
-            # your code here	
+          command: |
+          # your code here	
       # Here's where you will add some code to rollback on failure      	
 
-  deploy-backend:	
-    docker:	
-      # Docker image here that supports Ansible	
-    steps:	
+  deploy-backend:
+    docker:
+     # Docker image here that supports Ansible	
+    steps:
       # Checkout code from git	
       # Add ssh keys with fingerprint	
       # attach workspace	
-      - run:	
-          name: Install dependencies	
-          command: |	
+      - run:
+          name: Install dependencies
+          command: |
             # your code here	
-      - run:	
-          name: Deploy backend	
-          command: |	
+      - run:
+          name: Deploy backend
+          command: |
             # your code here	
       # Here's where you will add some code to rollback on failure  	
 
-  smoke-test:	
-    docker:	
+  smoke-test:
+    docker:
       # Lightweight Docker image 	
-    steps:	
+    steps:
       # Checkout code from git	
-      - run:	
+      - run:
           name: Install dependencies	
-          command: |	
-            # your code here	
-      - run:	
+          command: |
+          # your code here	
+      - run:
           name: Get backend url	
-          command: |	
-            # your code here	
-      - run:	
+          command: |
+           # your code here	
+      - run:
           name: Backend smoke test.	
-          command: |	
+          command: |
             # your code here	
-      - run:	
+      - run:
           name: Frontend smoke test.	
-          command: |	
+          command: |
             # your code here	
       # Here's where you will add some code to rollback on failure  	
           
