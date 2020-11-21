@@ -73,34 +73,34 @@ jobs:
       # Restore from cache	
       # Your job code here	
   
-  test-backend:	
-    docker:	
+  test-backend:
+    docker:
       # Docker image here	
-    steps:	
+    steps:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-  scan-frontend:	
+  scan-frontend:
     docker:	
       # Docker image here	
-    steps:	
+    steps:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
       
-  scan-backend:	
-    docker:	
+  scan-backend:
+    docker:
       # Docker image here	
-    steps:	
+    steps:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-  deploy-infrastructure:	
-    docker:	
+  deploy-infrastructure:
+    docker:
       # Docker image here that supports AWS CLI	
-    steps:	
+    steps:
       # Checkout code from git	
-      - run:	
+      - run:
           name: Ensure back-end infrastructure exists	
           command: |	
             aws cloudformation deploy \	
