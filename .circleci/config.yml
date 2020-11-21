@@ -81,7 +81,7 @@ jobs:
       # Restore from cache	
       # Your job code here	
   scan-frontend:
-    docker:	
+    docker:
       # Docker image here	
     steps:
       # Checkout code from git	
