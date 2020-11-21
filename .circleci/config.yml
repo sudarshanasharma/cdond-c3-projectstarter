@@ -66,9 +66,9 @@ jobs:
           key: $CIRCLE_BUILD_NUM
   
   test-frontend:
-    docker:	
+    docker:
       # Docker image here	
-    steps:	
+    steps:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
