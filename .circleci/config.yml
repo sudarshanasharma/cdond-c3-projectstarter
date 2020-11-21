@@ -65,7 +65,6 @@ jobs:
           paths: ~/project/backend/src/modules
           key: $CIRCLE_BUILD_NUM
     
-
   test-frontend:	
     docker:	
       # Docker image here	
