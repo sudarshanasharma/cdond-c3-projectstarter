@@ -39,15 +39,15 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys: $CIRCLE_BUILD_NUM
       - run:
           name: Build front-end
           command: |
-            # Your code here
-            exit 1
+            cd ~/project/frontend
+            npm i
       - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+          paths: ~/project/frontend/src/modules
+          key:  $CIRCLE_BUILD_NUM
 
   build-backend:
     docker:
@@ -55,15 +55,15 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys: $CIRCLE_BUILD_NUM
       - run:
           name: Back-end build
           command: |
-             # Your code here
-             exit 1
+            cd ~/project/backend
+            npm i
       - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+          paths: ~/project/backend/src/modules
+          key: $CIRCLE_BUILD_NUM
 
   test-frontend:
     docker:
