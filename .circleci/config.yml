@@ -64,7 +64,7 @@ jobs:
       - save_cache:
           paths: ~/project/backend/src/modules
           key: $CIRCLE_BUILD_NUM
-    
+  
   test-frontend:	
     docker:	
       # Docker image here	
@@ -72,7 +72,7 @@ jobs:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-
+  
   test-backend:	
     docker:	
       # Docker image here	
@@ -80,7 +80,6 @@ jobs:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-
   scan-frontend:	
     docker:	
       # Docker image here	
@@ -88,7 +87,7 @@ jobs:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-
+      
   scan-backend:	
     docker:	
       # Docker image here	
@@ -96,7 +95,6 @@ jobs:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-
   deploy-infrastructure:	
     docker:	
       # Docker image here that supports AWS CLI	
