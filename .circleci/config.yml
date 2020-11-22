@@ -160,7 +160,7 @@ jobs:
             exit 1	
       - run:
           name: Send migration results to memstash	
-          command: |	
+          command: |
             # Your code here
             exit 1	
      # Here's where you will add some code to rollback on failure      	
