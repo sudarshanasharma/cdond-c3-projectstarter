@@ -270,11 +270,11 @@ jobs:
         - run:
             name: Remove old stacks and files
             command: |
-              if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-              then
+             ## if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+             ## then
                  clear
                 # your code here
-              fi
+              ##fi
 
 workflows:
   default:
