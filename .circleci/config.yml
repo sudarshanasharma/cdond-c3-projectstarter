@@ -325,4 +325,4 @@ workflows:
       - cloudfront-update:
           requires: 
               - smoke-test
-      - cleanup:
+      - cleanup
