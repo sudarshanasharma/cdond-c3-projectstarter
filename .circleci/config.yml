@@ -44,7 +44,7 @@ jobs:
           name: Build front-end
           command: |
             cd ~/project/frontend
-            npm i
+            npm ci
             npm run build
       - save_cache:
           paths: ~/project/frontend/src/modules
@@ -61,7 +61,7 @@ jobs:
           name: Back-end build
           command: |
             cd ~/project/backend
-            npm i
+            npm ci
             npm run build
       - save_cache:
           paths: ~/project/backend/src/modules
@@ -78,8 +78,8 @@ jobs:
            name: Front-end test
            command: |
              cd ~/project/frontend
-             npm i
-             npm i jest-junit
+             npm ci
+             npm ci jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
            environment:
              JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
@@ -104,9 +104,9 @@ jobs:
           name: Back-end test
           command: |
              cd ~/project/backend
-             npm i
+             npm ci
              npm audit fix
-             npm i jest-junit
+             npm ci jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
