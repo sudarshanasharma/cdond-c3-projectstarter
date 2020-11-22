@@ -72,6 +72,16 @@ jobs:
        - image: circleci/node:13.8.0
     steps:
        - checkout
+       - restore_cache:
+           keys: $CIRCLE_BUILD_NUM
+       - run:
+           name: Front-end test
+           command: |
+             cd ~/project/frontend
+             npm run test
+       - save_cache:
+           paths: ~/project/frontend/src/modules
+           key: $CIRCLE_BUILD_NUM
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -81,7 +91,17 @@ jobs:
      - image: circleci/node:13.8.0
       # Docker image here	
     steps:
-      - checkout
+     - checkout
+     - restore_cache:
+          keys: $CIRCLE_BUILD_NUM
+     - run:
+          name: Back-end test
+          command: |
+             cd ~/project/backend
+             npm run test
+     - save_cache:
+           paths: ~/project/backend/src/modules
+           key: $CIRCLE_BUILD_NUM
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
