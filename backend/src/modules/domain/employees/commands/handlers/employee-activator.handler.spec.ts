@@ -1,3 +1,6 @@
+import { EmployeeRepository } from '../../repositories/employees.repository';
+import { ActivateEmployee } from '../activate-employee.command';
+import { EmployeeActivator } from './employee-activator.handler';
 
 describe('Employee Remover', () => {
   describe('when a user activates an employee', () => {
@@ -15,18 +18,22 @@ describe('Employee Remover', () => {
       // Arrange
       const handler = new EmployeeActivator(employeeRepository);
 
-      const record = {
-        employeeId: 100,
+      const params = {
+        employeeId: 100, //change this to 100 to make the test pass
         isActive: false,
       };
 
       const activateEmployeeCommand = new ActivateEmployee(
-        record.employeeId,
-        record.isActive,
+        params.employeeId,
+        params.isActive,
       );
 
       // Act
       await handler.handle(activateEmployeeCommand);
+
+      // Assert
+      expect(employeeRepository.findById).toBeCalledWith(100);
+      expect(employeeRepository.save).toBeCalled();
     });
   });
 });
