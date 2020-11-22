@@ -79,7 +79,7 @@ jobs:
            command: |
              cd ~/project/frontend
              npm ci
-             npm ci jest-junit
+             npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
            environment:
              JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
@@ -106,7 +106,7 @@ jobs:
              cd ~/project/backend
              npm ci
              npm audit fix
-             npm ci jest-junit
+             npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
