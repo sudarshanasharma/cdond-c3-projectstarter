@@ -62,7 +62,8 @@ jobs:
           command: |
             cd ~/project/backend
             npm install
-            npm rebuild
+            npm run clean
+            npm run build
       - save_cache:
           paths: ~/project/backend/src/modules
           key: $CIRCLE_BUILD_NUM
