@@ -272,6 +272,7 @@ jobs:
             command: |
               if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
               then
+                 clear
                 # your code here
               fi
 
