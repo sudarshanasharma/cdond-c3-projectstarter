@@ -80,7 +80,11 @@ jobs:
              cd ~/project/frontend
              npm i
              npm i jest-junit
-             npm run test
+             npm run test -- --reporters=default --reporters=jest-junit
+           environment:
+             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
+       - store_test_results:
+           path: /tmp/reports/junit/
        - save_cache:
            paths: ~/project/frontend/src/modules
            key: $CIRCLE_BUILD_NUM
@@ -102,7 +106,11 @@ jobs:
              cd ~/project/backend
              npm i
              npm i jest-junit
-             npm run test
+             npm run test -- --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
+     - store_test_results:
+           path: /tmp/reports/junit/
      - save_cache:
            paths: ~/project/backend/src/modules
            key: $CIRCLE_BUILD_NUM
