@@ -130,7 +130,7 @@ jobs:
       # Here's where you will add some code to rollback on failure      	
 
   configure-infrastructure:
-    docker:	
+    docker:
       # Docker image here that supports Ansible	
     steps:
       # Checkout code from git	
