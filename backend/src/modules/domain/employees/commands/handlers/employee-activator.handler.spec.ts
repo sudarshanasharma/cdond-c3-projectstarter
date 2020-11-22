@@ -1,6 +1,3 @@
-import { EmployeeRepository } from '../../repositories/employees.repository';
-import { ActivateEmployee } from '../activate-employee.command';
-import { EmployeeActivator } from './employee-activator.handler';
 
 describe('Employee Remover', () => {
   describe('when a user activates an employee', () => {
