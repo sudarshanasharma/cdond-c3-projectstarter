@@ -5,7 +5,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "clean": "git clean -fXd",
+    "clean": "rm -rf .cache .tmp lib build",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "ts-node -r tsconfig-paths/register -r dotenv/config src/main.ts",
