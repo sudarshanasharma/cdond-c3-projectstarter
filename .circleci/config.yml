@@ -61,8 +61,8 @@ jobs:
           name: Back-end build
           command: |
             cd ~/project/backend
-            npm install
             npm run clean
+            npm install
             npm run build
       - save_cache:
           paths: ~/project/backend/src/modules
