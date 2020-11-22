@@ -67,36 +67,48 @@ jobs:
   
   test-frontend:
     docker:
-      # Docker image here	
+       - image: circleci/node:13.8.0
     steps:
+       - run:
+          command: |
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
   
   test-backend:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here	
     steps:
+      - run:
+          command: |
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
   scan-frontend:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here	
     steps:
+      - run:
+          command: |
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
       
   scan-backend:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here	
     steps:
+      - run:
+          command: |
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
   deploy-infrastructure:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI	
     steps:
       # Checkout code from git	
@@ -131,6 +143,7 @@ jobs:
 
   configure-infrastructure:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here that supports Ansible	
     steps:
       # Checkout code from git	
@@ -150,6 +163,7 @@ jobs:
 
   run-migrations:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here that supports NodeJS	
     steps:
       # Checkout code from git	
@@ -167,6 +181,7 @@ jobs:
 
   deploy-frontend:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI	
     steps:
       # Checkout code from git	
@@ -188,6 +203,7 @@ jobs:
 
   deploy-backend:
     docker:
+     - image: circleci/node:13.8.0
      # Docker image here that supports Ansible	
     steps:
       # Checkout code from git	
@@ -205,6 +221,7 @@ jobs:
 
   smoke-test:
     docker:
+     - image: circleci/node:13.8.0
       # Lightweight Docker image 	
     steps:
       # Checkout code from git	
@@ -228,6 +245,7 @@ jobs:
   
   cloudfront-update:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
@@ -243,6 +261,7 @@ jobs:
 
 cleanup:
     docker:
+     - image: circleci/node:13.8.0
       # Docker image here
     steps:
       # Checkout code from git
