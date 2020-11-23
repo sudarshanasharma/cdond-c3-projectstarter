@@ -38,25 +38,18 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: $CIRCLE_BUILD_NUM
       - run:
           name: Build front-end
           command: |
             cd ~/project/frontend
             npm install
             npm run build
-      - save_cache:
-          paths: ~/project/frontend/node_modules
-          key:  $CIRCLE_BUILD_NUM
 
   build-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: $CIRCLE_BUILD_NUM
       - run:
           name: Back-end build
           command: |
@@ -64,17 +57,12 @@ jobs:
             npm run clean
             npm install
             npm run build
-      - save_cache:
-          paths: ~/project/backend/node_modules
-          key: $CIRCLE_BUILD_NUM
-  
+   
   test-frontend:
     docker:
        - image: circleci/node:13.8.0
     steps:
        - checkout
-       - restore_cache:
-           keys: $CIRCLE_BUILD_NUM
        - run:
            name: Front-end test
            command: |
@@ -86,9 +74,7 @@ jobs:
              JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
        - store_test_results:
            path: /tmp/reports/junit/
-       - save_cache:
-           paths: ~/project/frontend/node_modules
-           key: $CIRCLE_BUILD_NUM
+     
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -99,8 +85,6 @@ jobs:
       # Docker image here	
     steps:
      - checkout
-     - restore_cache:
-          keys: $CIRCLE_BUILD_NUM
      - run:
           name: Back-end test
           command: |
@@ -112,9 +96,6 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
      - store_test_results:
            path: /tmp/reports/junit/
-     - save_cache:
-           paths: ~/project/backend/node_modules
-           key: $CIRCLE_BUILD_NUM
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
