@@ -119,7 +119,7 @@ jobs:
       # Docker image here	
     steps:
       - checkout
-       - run:
+      - run:
           name: Back-end scan
           command: |
               cd ~/project/backend
