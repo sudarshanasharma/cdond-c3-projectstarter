@@ -105,6 +105,7 @@ jobs:
           name: Back-end test
           command: |
              cd ~/project/backend
+             npm run start
              npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
           environment:
