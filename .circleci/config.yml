@@ -88,7 +88,7 @@ jobs:
      - run:
           name: Back-end test
           command: |
-             cd ~/project/backendr
+             cd ~/project/backend
              npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
           environment:
