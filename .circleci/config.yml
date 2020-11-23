@@ -79,7 +79,6 @@ jobs:
            name: Front-end test
            command: |
              cd ~/project/frontend
-             npm install
              npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
            environment:
@@ -105,8 +104,6 @@ jobs:
           name: Back-end test
           command: |
              cd ~/project/backend
-             npm install
-             npm audit fix
              npm i jest-junit
              npm run test -- --reporters=default --reporters=jest-junit
           environment:
