@@ -123,7 +123,7 @@ jobs:
           name: Back-end scan
           command: |
               cd ~/project/backend
-              npm audit --audit-level=critical
+              npm audit fix --audit-level=critical
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
