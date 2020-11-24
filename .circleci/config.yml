@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@3.4.2
+
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -44,6 +47,8 @@ jobs:
             cd ~/project/frontend
             npm install
             npm run build
+      - slack/status:
+          fail_only: true
 
   build-backend:
     docker:
@@ -57,6 +62,8 @@ jobs:
             npm run clean
             npm install
             npm run build
+     - slack/status:
+          fail_only: true
    
   test-frontend:
     docker:
@@ -74,6 +81,9 @@ jobs:
              JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
        - store_test_results:
            path: /tmp/reports/junit/
+       - slack/status:
+          fail_only: true
+
      
       # Checkout code from git	
       # Restore from cache	
@@ -95,6 +105,9 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
      - store_test_results:
            path: /tmp/reports/junit/
+     - slack/status:
+          fail_only: true
+
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -109,6 +122,8 @@ jobs:
           command: |
               cd ~/project/frontend
               npm audit --audit-level=critical
+      - slack/status:
+          fail_only: true
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -124,6 +139,8 @@ jobs:
           command: |
               cd ~/project/backend
               npm audit fix --audit-level=critical
+      - slack/status:
+          fail_only: true
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -132,30 +149,33 @@ jobs:
      - image: circleci/node:13.8.0
       # Docker image here that supports AWS CLI	
     steps:
-      # Checkout code from git	
+      - checkout
       - run:
           name: Ensure back-end infrastructure exists	
           command: |
             aws cloudformation deploy \	
               --template-file .circleci/files/backend.yml \	
-              #--tags project=your-tag \	
-              # --stack-name "your back-end stack name with workflow id" \	
-              # --parameter-overrides ID="your workflow id"  	
-              exit 1	
+              --tags project=ss-udapeople \	
+              --stack-name bestk-6692684181 \	
+              --parameter-overrides ID="6692684181"  	
       - run:
           name: Ensure front-end infrastructure exist	
           command: |
             aws cloudformation deploy \	
               --template-file .circleci/files/frontend.yml \	
-              #--tags project=your-tag \	
-              # --stack-name "your front-end stack name with workflow id" \	
-              # --parameter-overrides ID="your workflow id"  	
-              exit 1	
+              --tags project=ss-udapeople \	
+              --stack-name festk-6692684181 \	
+              --parameter-overrides ID="6692684181"  	
+      - run:
+          name: give permission to write to inventory.txt
+          command: |
+             chmod 666 ~/project/.circleci/ansible/inventory.txt
       - run:
           name: Add back-end ip to ansible inventory	
           command: |
-            # Your code here	
-            exit 1	
+             aws cloudformation describe-stacks --stack-name festk-6692684181 \
+           --query Stacks[0].Outputs[].OutputValue \
+           --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/	
           paths:
