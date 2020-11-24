@@ -46,7 +46,7 @@ jobs:
             npm install
             npm run build
       - slack/notify:
-          event: always
+          event: "fail"
           template: basic_fail_1
           channel: general
 
