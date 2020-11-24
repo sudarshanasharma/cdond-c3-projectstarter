@@ -186,9 +186,10 @@ jobs:
             - project/.circleci/ansible/inventory.txt	
       # Here's where you will add some code to rollback on failure     
       - slack/notify:
+          channel: general
           event: fail
           template: basic_fail_1
-          channel: general
+          
 
   configure-infrastructure:
     docker:
@@ -382,4 +383,4 @@ workflows:
       - cloudfront-update:
           requires: 
               - smoke-test
-      - cleanup
+#      - cleanup
