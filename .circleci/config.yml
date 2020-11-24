@@ -6,15 +6,22 @@ orbs:
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here   
     steps:
       - run:
-          name: Destroy environments
-          when: on_fail
+          name: Delete all files from the current S3 bucket
           command: |
-            # Your code here
-            exit 1
+            set TERM=xterm               
+            if aws s3api head-bucket --bucket udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            then
+              aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/ --recursive
+            fi
+          when: on_fail
+      - run:
+          name: Delete the current CloudFormation stacks
+          command: |
+            aws cloudformation delete-stack --stack-name bestk-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -164,11 +171,11 @@ jobs:
       - run:
           name: Ensure back-end infrastructure exists	
           command: |
-            aws cloudformation deploy --template-file .circleci/files/backend.yml --tags project=ss-udapeople --stack-name bestk-6692684181 --parameter-overrides ID="6692684181"  	
+            aws cloudformation deploy --template-file .circleci/files/backend.yml --tags project="${CIRCLE_WORKFLOW_ID:0:7}" --stack-name bestk-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  	
       - run:
           name: Ensure front-end infrastructure exist	
           command: |
-            aws cloudformation deploy --template-file .circleci/files/frontend.yml --tags project=ss-udapeople --stack-name festk-6692684181 --parameter-overrides ID="6692684181"  	
+            aws cloudformation deploy --template-file .circleci/files/frontend.yml --tags project="${CIRCLE_WORKFLOW_ID:0:7}" --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  	
       - run:
           name: give permission to write to inventory.txt
           command: |
@@ -176,16 +183,18 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory	
           command: |
-             aws cloudformation describe-stacks --stack-name festk-6692684181 --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
+             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> .circleci/ansible/inventory.txt 
+#             aws cloudformation describe-stacks --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/	
           paths:
             - project/.circleci/ansible/inventory.txt	
-      # Here's where you will add some code to rollback on failure     
-      - slack/notify:
-          channel: general
-          event: fail
-          template: basic_fail_1
+      # Here's where you will add some code to rollback on failure  
+      - destroy-environment
+#      - slack/notify:
+#          channel: general
+#          event: fail
+#          template: basic_fail_1
           
 
   configure-infrastructure:
