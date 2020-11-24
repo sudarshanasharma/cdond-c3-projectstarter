@@ -46,7 +46,7 @@ jobs:
             npm install
             npm run build
       - slack/notify:
-          event: fail
+          event: always
           template: basic_fail_1
           channel: general
 
@@ -156,11 +156,7 @@ jobs:
       - run:
           name: Ensure back-end infrastructure exists	
           command: |
-            aws cloudformation deploy \	
-              --template-file .circleci/files/backend.yml \	
-              --tags project=ss-udapeople \	
-              --stack-name bestk-6692684181 \	
-              --parameter-overrides ID="6692684181"  	
+            aws cloudformation deploy --template-file .circleci/files/backend.yml --tags project=ss-udapeople --stack-name bestk-6692684181 --parameter-overrides ID="6692684181"  	
       - run:
           name: Ensure front-end infrastructure exist	
           command: |
