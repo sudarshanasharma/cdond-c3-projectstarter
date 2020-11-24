@@ -47,6 +47,7 @@ jobs:
             npm run build
       - slack/notify:
           event: fail
+          template: basic_fail_1
 
   build-backend:
     docker:
