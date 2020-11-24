@@ -352,7 +352,7 @@ workflows:
           filters:
             branches:
               only: 
-                - test-feature-branch
+                - non-prod
       - configure-infrastructure:
           requires: 
               - deploy-infrastructure
