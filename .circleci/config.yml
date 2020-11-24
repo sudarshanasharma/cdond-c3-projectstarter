@@ -144,12 +144,12 @@ jobs:
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
-  deploy-infrastructure:
-    docker:
-       - image: sudarshanas/awsplustar:0.0.1
-   #       auth:
-   #         username: sudarshanas
-   #         password: Palki@12345
+   deploy-infrastructure:  
+     docker:
+      - image: sudarshanas/awsplustar:0.0.1
+        auth:
+           username: sudarshanas
+           password: Palki@12345
       # Docker image here that supports AWS CLI	
     steps:
       - checkout
