@@ -48,6 +48,7 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+          channel: C01EQMLJ19V
 
   build-backend:
     docker:
