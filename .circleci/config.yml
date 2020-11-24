@@ -1,5 +1,6 @@
 version: 2.1
 orbs:
+    node: 'circleci/node:4.0'
     slack: circleci/slack@4.1.2
 
 commands:
@@ -46,7 +47,7 @@ jobs:
             npm install
             npm run build
       - slack/notify:
-          event: "fail"
+          event: fail
           template: basic_fail_1
           channel: general
 
