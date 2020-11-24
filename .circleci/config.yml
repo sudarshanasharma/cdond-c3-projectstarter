@@ -44,12 +44,12 @@ jobs:
       - run:
           name: Build front-end
           command: |
+            cd ~/project/frontend
             npm install
             npm run build
       - slack/notify:
           event: fail
           template: basic_fail_1
-          channel: general
 
   build-backend:
     docker:
@@ -65,6 +65,8 @@ jobs:
             npm run build
       - slack/notify:
           event: fail
+          template: basic_fail_1
+
    
   test-frontend:
     docker:
@@ -84,6 +86,7 @@ jobs:
            path: /tmp/reports/junit/
        - slack/notify:
           event: fail
+          template: basic_fail_1
 
      
       # Checkout code from git	
@@ -108,6 +111,7 @@ jobs:
            path: /tmp/reports/junit/
      - slack/notify:
           event: fail
+          template: basic_fail_1
 
       # Checkout code from git	
       # Restore from cache	
@@ -125,6 +129,7 @@ jobs:
               npm audit --audit-level=critical
       - slack/notify:
           event: fail
+          template: basic_fail_1
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -142,6 +147,7 @@ jobs:
               npm audit fix --audit-level=critical
       - slack/notify:
           event: fail
+          template: basic_fail_1
       # Checkout code from git	
       # Restore from cache	
       # Your job code here	
@@ -181,6 +187,8 @@ jobs:
       # Here's where you will add some code to rollback on failure     
       - slack/notify:
           event: fail
+          template: basic_fail_1
+
 
 
   configure-infrastructure:
@@ -326,21 +334,25 @@ workflows:
   default:
     jobs:
       - build-frontend:
-         context: udapeople 
+          context: udapeople 
       - build-backend:
           context: udapeople
       - test-frontend:
           requires:
               - build-frontend
+          context: udapeople 
       - test-backend:
           requires: 
               - build-backend
+          context: udapeople 
       - scan-backend:
           requires: 
               - build-backend
+          context: udapeople 
       - scan-frontend:
           requires: 
               - build-frontend
+          context: udapeople 
       - deploy-infrastructure:
           requires: 
               - test-frontend
@@ -351,6 +363,7 @@ workflows:
             branches:
               only: 
                 - non-prod
+          context: udapeople 
       - configure-infrastructure:
           requires: 
               - deploy-infrastructure
