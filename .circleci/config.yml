@@ -188,8 +188,7 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-
-
+          channel: general
 
   configure-infrastructure:
     docker:
@@ -337,14 +336,14 @@ workflows:
           context: udapeople 
       - build-backend:
           context: udapeople
-      - test-frontend:
-          requires:
-              - build-frontend
-          context: udapeople 
-      - test-backend:
-          requires: 
-              - build-backend
-          context: udapeople 
+#       - test-frontend:
+#          requires:
+#              - build-frontend
+#          context: udapeople 
+#      - test-backend:
+#          requires: 
+#             - build-backend
+#          context: udapeople 
       - scan-backend:
           requires: 
               - build-backend
@@ -355,8 +354,8 @@ workflows:
           context: udapeople 
       - deploy-infrastructure:
           requires: 
-              - test-frontend
-              - test-backend
+ #             - test-frontend
+ #             - test-backend
               - scan-frontend
               - scan-backend
           filters:
