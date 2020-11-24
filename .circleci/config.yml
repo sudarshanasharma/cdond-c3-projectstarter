@@ -146,7 +146,10 @@ jobs:
       # Your job code here	
   deploy-infrastructure:
     docker:
-     - image: circleci/node:13.8.0
+     - image: sudarshanas/awsplustar:0.0.1
+         auth:
+           username: sudarshanas
+           password: Palki@12345
       # Docker image here that supports AWS CLI	
     steps:
       - checkout
@@ -180,7 +183,10 @@ jobs:
           root: ~/	
           paths:
             - project/.circleci/ansible/inventory.txt	
-      # Here's where you will add some code to rollback on failure      	
+      # Here's where you will add some code to rollback on failure     
+      - slack/status:
+          fail_only: true
+
 
   configure-infrastructure:
     docker:
