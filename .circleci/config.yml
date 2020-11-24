@@ -331,7 +331,11 @@ workflows:
   default:
     jobs:
       - build-frontend
+          context:
+              - udapeople
       - build-backend
+          context:
+              - udapeople
       - test-frontend:
           requires:
               - build-frontend
