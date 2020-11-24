@@ -147,9 +147,9 @@ jobs:
   deploy-infrastructure:
     docker:
        - image: sudarshanas/awsplustar:0.0.1
-          auth:
-            username: sudarshanas
-            password: Palki@12345
+   #       auth:
+   #         username: sudarshanas
+   #         password: Palki@12345
       # Docker image here that supports AWS CLI	
     steps:
       - checkout
