@@ -246,7 +246,7 @@ jobs:
           template: basic_fail_1
  
      # Here's where you will add some code to rollback on failure  
-   deploy-frontend:
+  deploy-frontend:
     docker:
       - image: amazon/aws-cli
     steps:
@@ -274,8 +274,7 @@ jobs:
             ls -la
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment
       - revert-migrations
 
   deploy-backend:
@@ -309,8 +308,7 @@ jobs:
             tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment
       - revert-migrations
       - slack/notify:
           channel: general
