@@ -1,2 +1,0 @@
-[hosts]
-10.20.45.123 ansible_user=ubuntu
