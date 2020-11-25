@@ -12,8 +12,9 @@ commands:
           name: Install dependencies
           command: |
             curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
+            tar -czvf awscliv2.zip
             sudo ./aws/install
+          when: on_fail
       - run:
           name: Delete all files from the current S3 bucket
           command: |
