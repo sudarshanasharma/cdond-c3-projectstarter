@@ -161,12 +161,18 @@ jobs:
       # Your job code here	
   deploy-infrastructure:
      docker:
-     - image: sudarshanas/awsplustar:0.0.1
-       auth:
-           username: sudarshanas
-           password: Palki@12345
+     - image: amazon/aws-cli
+#     - image: sudarshanas/awsplustar:0.0.1
+#       auth:
+#           username: sudarshanas
+#           password: Palki@12345
       # Docker image here that supports AWS CLI	
      steps:
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar
+            yum -y install gzip
       - checkout
       - run:
           name: Ensure back-end infrastructure exists	
@@ -183,12 +189,12 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory	
           command: |
-             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> .circleci/ansible/inventory.txt 
+             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> inventory.txt)
 #             aws cloudformation describe-stacks --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: ~/	
+          root: .circleci/ansible
           paths:
-            - project/.circleci/ansible/inventory.txt	
+            - inventory.txt	
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
 #      - slack/notify:
