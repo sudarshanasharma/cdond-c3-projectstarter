@@ -354,7 +354,7 @@ workflows:
           context: udapeople 
       - build-backend:
           context: udapeople
-       - test-frontend:
+      - test-frontend:
           requires:
               - build-frontend
           context: udapeople 
