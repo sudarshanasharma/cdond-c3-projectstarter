@@ -9,6 +9,12 @@ commands:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
       - run:
+          name: Install dependencies
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      - run:
           name: Delete all files from the current S3 bucket
           command: |
             set TERM=xterm               
@@ -229,11 +235,6 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update tar gzip ansible nodejs npm jq
-            pip install awscli
       - run:
           name: run and save migration 
           #no_output_timeout: 30m
