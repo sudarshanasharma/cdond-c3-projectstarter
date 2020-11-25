@@ -183,10 +183,6 @@ jobs:
           command: |
             aws cloudformation deploy --template-file .circleci/files/frontend.yml --tags project="${CIRCLE_WORKFLOW_ID:0:7}" --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  	
       - run:
-          name: give permission to write to inventory.txt
-          command: |
-             chmod 666 .circleci/ansible/inventory.txt
-      - run:
           name: Add back-end ip to ansible inventory	
           command: |
             echo -e "[all]\n" > ./.circleci/ansible/inventory.txt
