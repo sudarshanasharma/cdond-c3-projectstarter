@@ -202,10 +202,8 @@ jobs:
           event: fail
           template: basic_fail_1
  
-          
-
   configure-infrastructure:
-  docker:
+    docker:
       - image: "python:3.7-alpine3.11"
     steps:
       - checkout
