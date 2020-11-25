@@ -230,11 +230,21 @@ jobs:
     steps:
       - checkout
       - run:
-          name: run and save migration 
+          name: Install dependencies
           command: |
-            cd backend
+            apk add --update tar gzip ansible nodejs npm jq
+            pip install awscli
+      - run:
+          name: run and save migration 
+          #no_output_timeout: 30m
+          command: |
+            cd ~/project/backend
+            npm run clean
             npm install
-            npm i
+ #           npm run build
+ #         # cd backend
+ #           npm install
+ #           npm i
             npm audit fix --audit-level=critical --force
             npm run migrations > migrations.txt
             curl -H "content-length: 0" -X POST "https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${STORE_TOKEN}/workflow_id/${CIRCLE_WORKFLOW_ID:0:7}"            
@@ -269,7 +279,7 @@ jobs:
       - run:
           name: Deploy frontend 
           command: |
-            cd frontend
+            cd ~/project/frontend
             cat .env
             ls -la
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
