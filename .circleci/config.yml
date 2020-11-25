@@ -185,11 +185,11 @@ jobs:
       - run:
           name: give permission to write to inventory.txt
           command: |
-             chmod 666 ~/project/.circleci/ansible/inventory.txt
+             chmod 666 ./.circleci/ansible/inventory.txt
       - run:
           name: Add back-end ip to ansible inventory	
           command: |
-             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> inventory.txt)
+             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ./.circleci/ansible/inventory.txt
 #             aws cloudformation describe-stacks --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: .circleci/ansible
@@ -197,32 +197,34 @@ jobs:
             - inventory.txt	
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
-#      - slack/notify:
-#          channel: general
-#          event: fail
-#          template: basic_fail_1
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+ 
           
 
   configure-infrastructure:
-    docker:
-     - image: circleci/node:13.8.0
-      # Docker image here that supports Ansible	
+  docker:
+      - image: "python:3.7-alpine3.11"
     steps:
-      # Checkout code from git	
-      # Add ssh keys with fingerprint	
-      # attach workspace	
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
       - run:
-          name: Install dependencies	
+          name: Install dependencies
           command: |
-            # Your code here	
-            exit 1	
+            apk add --update ansible
       - run:
-          name: Configure server	
+          name: Configure server
           command: |
-            # Your code here	
-            exit 1	
-      # Here's where you will add some code to rollback on failure      	
-
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./.circleci/ansible/inventory.txt main.yml
+      - destroy-environment
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+   
   run-migrations:
     docker:
      - image: circleci/node:13.8.0
