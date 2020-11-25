@@ -241,10 +241,6 @@ jobs:
             cd ~/project/backend
             npm run clean
             npm install
- #           npm run build
- #         # cd backend
- #           npm install
- #           npm i
             npm audit fix --audit-level=critical --force
             npm run migrations > migrations.txt
             curl -H "content-length: 0" -X POST "https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${STORE_TOKEN}/workflow_id/${CIRCLE_WORKFLOW_ID:0:7}"            
