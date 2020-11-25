@@ -2,7 +2,7 @@ version: 2.1
 orbs:
     node: circleci/node@4.0
     slack: circleci/slack@4.1.1
-    jq: circleci/jq@2.2.0
+#    jq: circleci/jq@2.2.0
 
 commands:
   destroy-environment:
@@ -201,10 +201,6 @@ jobs:
 #           - inventory.txt	
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
-      - slack/notify:
-          channel: general
-          event: fail
-          template: basic_fail_1
  
   configure-infrastructure:
     docker:
