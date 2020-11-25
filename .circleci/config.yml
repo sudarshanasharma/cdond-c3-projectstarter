@@ -185,13 +185,13 @@ jobs:
       - run:
           name: give permission to write to inventory.txt
           command: |
-             chmod 666 ./.circleci/ansible/inventory.txt
+             chmod 666 .circleci/ansible/inventory.txt
       - run:
           name: Add back-end ip to ansible inventory	
           command: |
             echo -e "[web]\n" > ./.circleci/ansible/inventory.txt
-            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ./.circleci/ansible/inventory.txt
-            cat ./.circleci/ansible/inventory.txt
+            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
 #             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ./.circleci/ansible/inventory.txt
 #             aws cloudformation describe-stacks --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
@@ -217,7 +217,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./.circleci/ansible/inventory.txt main.yml
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/main.yml
       - destroy-environment
       - slack/notify:
           channel: general
