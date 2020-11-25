@@ -2,6 +2,7 @@ version: 2.1
 orbs:
     node: circleci/node@4.0
     slack: circleci/slack@4.1.1
+    jq: circleci/jq@2.2.0
 
 commands:
   destroy-environment:
@@ -230,20 +231,25 @@ jobs:
    
   run-migrations:
     docker:
-     - image: circleci/node:13.8.0
-      # Docker image here that supports NodeJS	
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git	
+      - checkout
       - run:
-          name: Run migrations	
+          name: run and save migration 
           command: |
-            # Your code here	
-            exit 1	
-      - run:
-          name: Send migration results to memstash	
-          command: |
-            # Your code here
-            exit 1	
+            cd backend
+            npm install
+            npm i
+            npm audit fix --audit-level=critical --force
+            npm run migrations > migrations.txt
+            curl -H "content-length: 0" -X POST "https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${STORE_TOKEN}/workflow_id/${CIRCLE_WORKFLOW_ID:0:7}"            
+            cat migrations.txt 
+      - destroy-environment
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+ 
      # Here's where you will add some code to rollback on failure      	
 
   deploy-frontend:
@@ -379,7 +385,7 @@ workflows:
           filters:
             branches:
               only: 
-                -master
+                -non-prod
           context: udapeople 
       - configure-infrastructure:
           requires: 
