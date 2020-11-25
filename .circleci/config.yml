@@ -26,23 +26,19 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      # Add parameter here     
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
-            if(( $SUCCESS==1 )); 
+            success_migration=$(curl https://keyvalue.immanuel.co/api/KeyVal/GetValue/${STORE_TOKEN}/workflow_id)            
+            if ((success_migrations== true));
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+              cd backend
+              npm install
+              npm run migrations:revert
             fi
-            
+          when: on_fail
+
 jobs:
   build-frontend:
     docker:
@@ -212,7 +208,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible nodejs npm curl
+            apk add --update tar gzip ansible nodejs npm curl jq
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
@@ -249,48 +245,78 @@ jobs:
           event: fail
           template: basic_fail_1
  
-     # Here's where you will add some code to rollback on failure      	
-
-  deploy-frontend:
+     # Here's where you will add some code to rollback on failure  
+   deploy-frontend:
     docker:
-     - image: circleci/node:13.8.0
-      # Docker image here that supports AWS CLI	
+      - image: amazon/aws-cli
     steps:
-      # Checkout code from git	
+      - checkout
       - run:
           name: Install dependencies
           command: |
-            # your code here	
-      - run:
-          name: Get backend url	
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+            yum -y install tar gzip
+      - run:    
+          name: Get backend url
           command: |
-            # your code here
-            export API_URL="http://${BACKEND_IP}:3030"	
-            echo "${API_URL}"	
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}" 
       - run:
-          name: Deploy frontend objects	
+          name: Deploy frontend 
           command: |
-          # your code here	
-      # Here's where you will add some code to rollback on failure      	
+            cd frontend
+            cat .env
+            ls -la
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations
 
   deploy-backend:
     docker:
-     - image: circleci/node:13.8.0
-     # Docker image here that supports Ansible	
+      - image: python:3.7-alpine3.11
     steps:
-      # Checkout code from git	
-      # Add ssh keys with fingerprint	
-      # attach workspace	
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
+      - attach_workspace:
+          at: ~/project
       - run:
           name: Install dependencies
           command: |
-            # your code here	
+            apk add --update tar gzip ansible nodejs npm jq
+            pip install awscli
       - run:
-          name: Deploy backend
+          name: deploy backend
+          no_output_timeout: 30m
           command: |
-            # your code here	
-      # Here's where you will add some code to rollback on failure  	
-
+            echo ENVIROMENT=development > "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+      
   smoke-test:
     docker:
      - image: circleci/node:13.8.0
@@ -397,9 +423,11 @@ workflows:
       - deploy-frontend:
           requires: 
               - run-migrations
+          context: udapeople
       - deploy-backend:
           requires: 
               - run-migrations
+          context: udapeople
       - smoke-test:
           requires: 
               - deploy-backend
