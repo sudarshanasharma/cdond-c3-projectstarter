@@ -49,8 +49,8 @@ commands:
             aws cloudformation delete-stack --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
-  revert-migrations:
-   description: Revert the last migration if smoke tests are failing in the current workflow
+  revert-migration:
+    description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
       - run:
           when: on_fail
