@@ -1,0 +1,25 @@
+---
+
+- name: Copy files from circleci to backend server
+  copy:
+    src: /root/project/backend
+    dest: /home/ubuntu/
+
+- name: Stop PM2
+  ignore_errors: yes
+  shell: |
+    pm2 stop backend
+    pm2 delete backend
+
+- name: Build node service
+  shell: |
+    cd /home/ubuntu/backend
+    npm i
+    npm audit fix --audit-level=critical --force
+    npm run build
+      
+- name: Start pm2 service
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 start npm --name backend -- start
+
