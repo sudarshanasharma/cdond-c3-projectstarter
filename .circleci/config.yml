@@ -5,6 +5,24 @@ orbs:
 #    jq: circleci/jq@2.2.0
 
 commands:
+  write-envvars-file:
+    description: Command used for creating env file
+    steps:
+      - run:
+          name: Add env vars to env file
+          command: |
+            echo "NODE_ENV=production" >> backend/.env
+            echo "VERSION=1" >> backend/.env
+            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
+            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
+            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
+            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env  
+  
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
@@ -32,19 +50,28 @@ commands:
           when: on_fail
 
   revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
+   description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
       - run:
-          name: Revert migrations
+          when: on_fail
+          name: Install dependencies
           command: |
-            success_migration=$(curl https://keyvalue.immanuel.co/api/KeyVal/GetValue/${STORE_TOKEN}/workflow_id)            
-            if ((success_migrations== true));
+            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+            yum -y install nodejs
+      - checkout
+      - write-envvars-file
+      - run:
+          when: on_fail
+          name: Load migration status from https://memstash.io/ and revert migrations if necessary
+          command: |
+            DBMIGRATION_FLAG=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion)
+            echo ${DBMIGRATION_FLAG}
+            if [[ ${DBMIGRATION_FLAG} == 1 ]]
             then
               cd backend
-              npm install
+              npm i
               npm run migrations:revert
-            fi
-          when: on_fail
+            fi         
 
 jobs:
   build-frontend:
@@ -230,42 +257,43 @@ jobs:
           channel: general
           event: fail
           template: basic_fail_1
-   
+ 
+ 
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - write-envvars-file      
       - run:
-          name: run and save migration 
-          #no_output_timeout: 30m
+          name: Run migrations and save status to https://memstash.io/
           command: |
-            cd ~/project/backend
-            npm run clean
-            npm install
+            cd backend
+            npm i
             npm audit fix --audit-level=critical --force
-            npm run migrations > migrations.txt
-            curl -H "content-length: 0" -X POST "https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${STORE_TOKEN}/workflow_id/${CIRCLE_WORKFLOW_ID:0:7}"            
-            cat migrations.txt 
-      - destroy-environment
+            npm run migrations > migrations.txt            
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}"  --request PUT \
+              --data $( grep -c "No migrations are pending" migrations.txt ) \
+              https://api.memstash.io/values/migration_completion
+            cat migrations.txt
       - slack/notify:
           channel: general
           event: fail
           template: basic_fail_1
- 
-     # Here's where you will add some code to rollback on failure  
+
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-            yum -y install tar gzip
-      - run:    
+            apk add --no-cache nodejs
+            apk add --no-cache npm
+            apk add --no-cache bash
+            pip install awscli
+      - run:
           name: Get backend url
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
@@ -273,23 +301,41 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}" 
+            echo "API_URL=$API_URL" >> frontend/.env
+            echo "${API_URL}"
       - run:
-          name: Deploy frontend 
+          name: "Baking backend API_URL into the frontend"
           command: |
-            cd ~/project/frontend
-            cat .env
-            ls -la
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            npm install webpack-dev-server -g
+            cd frontend
+            npm i
+            npm run build
+            npm audit fix --audit-level=critical --force
+      - run: 
+          name: Copy built frontend files to the S3 bucket
+          command: |
+            aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
+      - revert-migration
       - destroy-environment
-      - revert-migrations
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+
+
 
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            apk add --no-cache openssh-client
+            apk add --no-cache --upgrade bash
+            pip install awscli
       - add_ssh_keys:
           fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
       - attach_workspace:
@@ -297,27 +343,16 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible nodejs npm jq
+            apk add --update tar gzip ansible nodejs npm
             pip install awscli
+      - write-envvars-file
       - run:
-          name: deploy backend
-          no_output_timeout: 30m
+          name: Configure server
           command: |
-            echo ENVIROMENT=development > "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            ansible-playbook -i inventory.txt main.yml
+      - revert-migration      
       - destroy-environment
-      - revert-migrations
       - slack/notify:
           channel: general
           event: fail
