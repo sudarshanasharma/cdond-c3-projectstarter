@@ -26,13 +26,13 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-            tar -czvf awscliv2.zip
-            sudo ./aws/install
-          when: on_fail
+#      - run:
+#          name: Install dependencies
+#          command: |
+#            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+#            tar -czvf awscliv2.zip
+#            sudo ./aws/install
+#          when: on_fail
       - run:
           name: Delete all files from the current S3 bucket
           command: |
@@ -289,6 +289,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            apk add --update tar gzip curl jq
             apk add --no-cache nodejs
             apk add --no-cache npm
             apk add --no-cache bash
@@ -314,7 +315,7 @@ jobs:
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |
-            aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
+            aws s3 cp ./frontend/dist s3://udapeople-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
       - revert-migration
       - destroy-environment
       - slack/notify:
@@ -332,7 +333,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible nodejs npm curl
+            apk add --update tar gzip ansible nodejs npm curl jq
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
