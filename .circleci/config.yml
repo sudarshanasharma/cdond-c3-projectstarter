@@ -5,24 +5,6 @@ orbs:
 #    jq: circleci/jq@2.2.0
 
 commands:
-  write-envvars-file:
-    description: Command used for creating env file
-    steps:
-      - run:
-          name: Add env vars to env file
-          command: |
-            echo "NODE_ENV=production" >> backend/.env
-            echo "VERSION=1" >> backend/.env
-            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
-            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
-            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
-            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
-            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
-            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
-            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
-            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
-            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env  
-  
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
@@ -343,17 +325,11 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Install dependencies
-          command: |
-            apk add --update tar gzip ansible nodejs npm
-            pip install awscli
-      - write-envvars-file
-      - run:
           name: Configure server
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
-          no_output_timeout: 30m  
+        #  no_output_timeout: 30m  
       - revert-migration      
       - destroy-environment
       - slack/notify:
@@ -363,24 +339,24 @@ jobs:
       
   smoke-test:
     docker:
-     - image: circleci/node:13.8.0
+     - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - write-envvars-file 
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible nodejs npm curl jq
+            apk add --update tar gzip nodejs npm curl jq
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
+      - attach_workspace:
+          at: ~/project
       - run:
           name: Smoke test backend
           command: |
-            export BACKEND_IP=$(aws ec2 --region us-east-1 describe-instances \
-                  --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
-                  --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                  --output text)
+            export BACKEND_IP=$(cat .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"      
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
             echo ${EC2_URL}
