@@ -364,27 +364,52 @@ jobs:
   smoke-test:
     docker:
      - image: circleci/node:13.8.0
-      # Lightweight Docker image 	
     steps:
-      # Checkout code from git	
+      - checkout
+      - write-envvars-file 
       - run:
-          name: Install dependencies	
+          name: Install dependencies
           command: |
-          # your code here	
+            apk add --update tar gzip ansible nodejs npm curl jq
+            apk add --no-cache openssh-client
+            apk add --no-cache --upgrade bash
+            pip install awscli
       - run:
-          name: Get backend url	
+          name: Smoke test backend
           command: |
-           # your code here	
+            export BACKEND_IP=$(aws ec2 --region us-east-1 describe-instances \
+                  --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
+                  --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                  --output text)
+            echo "Backend IP: ${BACKEND_IP}"      
+            EC2_URL="http://${BACKEND_IP}:3030/api/status"
+            echo ${EC2_URL}
+            curl ${EC2_URL}
+            if curl -s ${EC2_URL} | grep "ok"
+            then
+              exit 0
+            else
+              exit 1
+            fi            
       - run:
-          name: Backend smoke test.	
+          name: Smoke test frontend
           command: |
-            # your code here	
-      - run:
-          name: Frontend smoke test.	
-          command: |
-            # your code here	
-      # Here's where you will add some code to rollback on failure  	
-  
+            pwd
+            APP_URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employee"
+            if curl -s ${APP_URL} | grep "Welcome"
+            then
+              exit 0
+            else
+              exit 1
+            fi
+      - revert-migration
+      - destroy-environment
+      - slack/notify:
+          channel: general
+          event: fail
+          template: basic_fail_1
+      
+    
   cloudfront-update:
     docker:
      - image: circleci/node:13.8.0
@@ -476,6 +501,7 @@ workflows:
           requires: 
               - deploy-backend
               - deploy-frontend
+          context: udapeople
       - cloudfront-update:
           requires: 
               - smoke-test
