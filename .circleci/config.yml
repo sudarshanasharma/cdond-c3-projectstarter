@@ -251,8 +251,8 @@ jobs:
       - run:
           name: Configure server
           command: |
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/main.yml
-          no_output_timeout: 30m
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+          
       - destroy-environment
       - slack/notify:
           channel: general
@@ -352,7 +352,8 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt main.yml
+            ansible-playbook -i inventory.txt deploy-backend.yml
+          no_output_timeout: 30m  
       - revert-migration      
       - destroy-environment
       - slack/notify:
