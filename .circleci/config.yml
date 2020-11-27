@@ -425,7 +425,7 @@ workflows:
 #              - build-frontend
 #          context: udapeople 
       - deploy-infrastructure:
-          requires: 
+#          requires: 
 #              - test-frontend
 #              - test-backend
 #              - scan-frontend
