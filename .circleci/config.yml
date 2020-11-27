@@ -231,13 +231,11 @@ jobs:
           name: Run migrations and save status to https://memstash.io/
           command: |
             cd backend
-            npm i
-            npm audit fix --audit-level=critical --force
-            npm run migrations > migrations.txt            
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}"  --request PUT \
-              --data $( grep -c "No migrations are pending" migrations.txt ) \
-              https://api.memstash.io/values/migration_completion
-            cat migrations.txt
+            sudo npm i
+            sudo npm audit fix --audit-level=critical --force
+            sudo npm run migrations > migrations.txt            
+            sudo curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/migration_completion
+            sudo cat migrations.txt
       - slack/notify:
           channel: general
           event: fail
@@ -406,10 +404,10 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context: udapeople 
-      - build-backend:
-          context: udapeople
+#      - build-frontend:
+#          context: udapeople 
+#      - build-backend:
+#          context: udapeople
 #      - test-frontend:
 #          requires:
 #              - build-frontend
@@ -418,20 +416,20 @@ workflows:
 #          requires: 
 #             - build-backend
 #          context: udapeople 
-      - scan-backend:
-          requires: 
-              - build-backend
-          context: udapeople 
-      - scan-frontend:
-          requires: 
-              - build-frontend
-          context: udapeople 
+#      - scan-backend:
+#          requires: 
+#              - build-backend
+#          context: udapeople 
+#      - scan-frontend:
+#          requires: 
+#              - build-frontend
+#          context: udapeople 
       - deploy-infrastructure:
           requires: 
 #              - test-frontend
 #              - test-backend
-              - scan-frontend
-              - scan-backend
+#              - scan-frontend
+#              - scan-backend
           filters:
             branches:
               only: 
