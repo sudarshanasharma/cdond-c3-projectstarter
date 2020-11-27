@@ -338,7 +338,7 @@ jobs:
           command: |
             export BACKEND_IP=$(tail -1 .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"      
-            EC2_URL="https://${BACKEND_IP}:3030/api/status"
+            EC2_URL="https://${BACKEND_IP}:3030"
             echo ${EC2_URL}
             curl ${EC2_URL}
             if curl -s ${EC2_URL} | grep "ok"
