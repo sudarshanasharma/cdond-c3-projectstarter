@@ -263,7 +263,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(tail -1 .circleci/ansible/inventory.txt)
+            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
             export API_URL="https://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
@@ -336,7 +336,7 @@ jobs:
       - run:
           name: Smoke test backend
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-deployment-${CIRCLE_WORKFLOW_ID:0:7}" --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query "Reservations[*].Instances[*].[PublicDnsName]" --output text)
             echo "Backend IP: ${BACKEND_IP}"      
             EC2_URL="https://${BACKEND_IP}:3030/api/status"
             echo ${EC2_URL}
