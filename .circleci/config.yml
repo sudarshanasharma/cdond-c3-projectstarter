@@ -358,8 +358,8 @@ jobs:
             else
               exit 1
             fi
-      - revert-migration
-      - destroy-environment
+#      - revert-migration
+#      - destroy-environment
       - slack/notify:
           channel: general
           event: fail
