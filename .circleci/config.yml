@@ -374,7 +374,7 @@ jobs:
       - run:
           name: Smoke test backend
           command: |
-            export BACKEND_IP=$(cat .circleci/ansible/inventory.txt)
+            export BACKEND_IP=$(tail -1 .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"      
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
             echo ${EC2_URL}
