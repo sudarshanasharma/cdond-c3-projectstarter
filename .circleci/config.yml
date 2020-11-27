@@ -8,13 +8,6 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-#            tar -czvf awscliv2.zip
-#            sudo ./aws/install
-#          when: on_fail
       - run:
           name: Delete all files from the current S3 bucket
           command: |
@@ -52,12 +45,6 @@ commands:
   revert-migration:
     description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
-#    - run:
-#          when: on_fail
-#          name: Install dependencies
-#          command: |
-#            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
-#            yum -y install nodejs
       - checkout
       - write-envvars-file
       - run:
@@ -126,11 +113,6 @@ jobs:
        - slack/notify:
           event: fail
           template: basic_fail_1
-
-     
-      # Checkout code from git	
-      # Restore from cache	
-      # Your job code here	
   
   test-backend:
     docker:
@@ -152,9 +134,6 @@ jobs:
           event: fail
           template: basic_fail_1
 
-      # Checkout code from git	
-      # Restore from cache	
-      # Your job code here	
   scan-frontend:
     docker:
      - image: circleci/node:13.8.0
@@ -169,9 +148,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      # Checkout code from git	
-      # Restore from cache	
-      # Your job code here	
       
   scan-backend:
     docker:
@@ -187,17 +163,9 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      # Checkout code from git	
-      # Restore from cache	
-      # Your job code here	
   deploy-infrastructure:
      docker:
      - image: amazon/aws-cli
-#     - image: sudarshanas/awsplustar:0.0.1
-#       auth:
-#           username: sudarshanas
-#           password: Palki@12345
-      # Docker image here that supports AWS CLI	
      steps:
       - run:
           name: Install dependencies
@@ -219,17 +187,10 @@ jobs:
             echo -e "[all]\n" > ./.circleci/ansible/inventory.txt
             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ./.circleci/ansible/inventory.txt
             cat ./.circleci/ansible/inventory.txt
-#             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ./.circleci/ansible/inventory.txt
-#             aws cloudformation describe-stacks --stack-name festk-${CIRCLE_WORKFLOW_ID:0:7} --query Stacks[0].Outputs[].OutputValue --output text >> ~/project/.circleci/ansible/inventory.txt
       - persist_to_workspace:
            root: ~/project
            paths:
-              - ./.circleci/ansible/inventory.txt
-#     - persist_to_workspace:
-#          root: .circleci/ansible
-#          paths:
-#           - inventory.txt	
-      # Here's where you will add some code to rollback on failure  
+              - ./.circleci/ansible/inventory.txt 
       - destroy-environment
  
   configure-infrastructure:
@@ -295,14 +256,15 @@ jobs:
             apk add --no-cache npm
             apk add --no-cache bash
             pip install awscli
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
+      - attach_workspace:
+          at: ~/project
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
+            export BACKEND_IP=$(tail -1 .circleci/ansible/inventory.txt)
+            export API_URL="https://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
       - run:
@@ -343,7 +305,7 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Configure server
+          name: Deploy backend
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt deploy-backend.yml
@@ -376,7 +338,7 @@ jobs:
           command: |
             export BACKEND_IP=$(tail -1 .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"      
-            EC2_URL="http://${BACKEND_IP}:3030/api/status"
+            EC2_URL="https://${BACKEND_IP}:3030/api/status"
             echo ${EC2_URL}
             curl ${EC2_URL}
             if curl -s ${EC2_URL} | grep "ok"
@@ -389,7 +351,7 @@ jobs:
           name: Smoke test frontend
           command: |
             pwd
-            APP_URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employee"
+            APP_URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employee"
             if curl -s ${APP_URL} | grep "Welcome"
             then
               exit 0
