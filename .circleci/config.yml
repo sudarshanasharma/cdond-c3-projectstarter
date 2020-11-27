@@ -211,7 +211,7 @@ jobs:
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
 
-            export API_URL=http://$BACKEND_IP:3030
+            export API_URL=http://$BACKEND_IP:3031
             echo "API_URL=$API_URL" > frontend/.env
             echo "${API_URL}"
       - run:
@@ -299,7 +299,7 @@ jobs:
           command: |
             BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
             echo "${BACKEND_IP}"
-            curl "http://${BACKEND_IP}:3030/api/status"
+            curl "http://${BACKEND_IP}:3031/api/status"
       - run:
           name: Smoke test frontend
           command: |
