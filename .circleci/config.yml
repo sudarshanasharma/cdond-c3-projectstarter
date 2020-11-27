@@ -10,6 +10,7 @@ commands:
             aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID}" --recursive
             aws cloudformation delete-stack --stack-name "festk-${CIRCLE_WORKFLOW_ID}"
             aws cloudformation delete-stack --stack-name "bestk-${CIRCLE_WORKFLOW_ID}"
+            aws cloudformation delete-stack --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID}"
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
           when: on_fail
 
