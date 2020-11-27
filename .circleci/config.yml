@@ -52,12 +52,12 @@ commands:
   revert-migration:
     description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
-      - run:
-          when: on_fail
-          name: Install dependencies
-          command: |
-            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
-            yum -y install nodejs
+#    - run:
+#          when: on_fail
+#          name: Install dependencies
+#          command: |
+#            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+#            yum -y install nodejs
       - checkout
       - write-envvars-file
       - run:
