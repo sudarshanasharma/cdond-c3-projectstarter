@@ -15,7 +15,7 @@
   become: true
   copy:
     src: /root/project/backend
-    dest: /home/ubuntu
+    dest: /home/ubuntu/backend
 
 # - name: Delete old PM2 process
 #   become: true
