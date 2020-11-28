@@ -10,7 +10,6 @@ commands:
             aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID}" --recursive
             aws cloudformation delete-stack --stack-name "festk-${CIRCLE_WORKFLOW_ID}"
             aws cloudformation delete-stack --stack-name "bestk-${CIRCLE_WORKFLOW_ID}"
-            aws cloudformation delete-stack --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID}"
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
           when: on_fail
 
@@ -134,10 +133,7 @@ jobs:
             ARN=$(aws s3 ls | grep udapeople)
             echo "ARN=$ARN"
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}
-      - run:
-          name: Ensure that the cloudfront infrastructure exists
-          command: |
-            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID}" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
+     
       - destroy-environment
 
   configure-infrastructure:
@@ -194,7 +190,7 @@ jobs:
       - run:
           name: Log to memstash
           command: |
-            curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "true" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID:0:7}
+            curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "true" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID}
       - destroy-environment
 
   deploy-frontend:
@@ -220,16 +216,16 @@ jobs:
           command: |
             npm install webpack-dev-server -g
             cd frontend
+            echo "----------------------------------------"
+            echo "***********FRONTEND-ENV*****************"
             cat .env
+            echo "***********FRONTEND-ENV*****************"
+            echo "----------------------------------------"
             npm install
             npm run build
             npm audit fix --audit-level=critical --force
             cd dist
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
-      - persist_to_workspace:
-          root: ~/project/
-          paths:
-            - frontend
       - destroy-environment
       - revert-migration
 
@@ -272,18 +268,11 @@ jobs:
 
             npm i
             npm run build
-            echo "List of contents before deleting: "
-            ls -a
-            echo "----------------------------------------"
 
             rm -rf node_modules 
             rm -rf dist
             rm -rf test
             rm README.md 
-
-            echo "List of files and dirs that will be sent to ansible: "
-            ls -a
-            echo "----------------------------------------"
 
             mkdir -p ../.circleci/ansible/roles/deploy/files
             cd ../.circleci/ansible
@@ -317,50 +306,56 @@ jobs:
             else
               return 1
             fi
-  #     - destroy-environment
-  #     - revert-migration
+
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum -y install tar gzip
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
+      - run:
+          name: old stack workflow id / remove old stack and files
+          command: |
+          ##    export OldWorkflowID=$(aws cloudformation describe-stacks --stack-name cloudfront --query Stacks[0].Outputs[].OutputValue --output text)
+          ##  echo Old Workflow Id: "$(cat ~/id.txt)"
+           ## echo Current Workflow Id: "${CIRCLE_WORKFLOW_ID}"
+       ##     if [ "${OldWorkflowID}" != "${CIRCLE_WORKFLOW_ID}" ]
+      ##   then 
+            aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
+            aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
+            aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
+      ##    else
+      ##      echo "no destroy"
+      ##    fi
 
   cloudfront-update:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
       - run:
           name: Install dependencies
           command: |
             apk add --update nodejs npm curl
             pip install awscli
+      - add_ssh_keys:
+          fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
+      - run: |
+           aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
+       - persist_to_workspace:
+          root: ~/
+          paths:
+            - id.txt
       - run:
-          name: Promote CloudFront distribution and clean up old resources
+          name: Update the cloudfront
           command: |
-            export OldWorkflowID=$(aws cloudformation  list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-            export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate  --output text)
-
-            echo Old Workflow Id: "$OldWorkflowID"
-            echo "$STACKS[*]"
-
-            if echo "$STACKS[*]" | grep -Eq "$OldWorkflowID" 
-            then
-              echo "${OldWorkflowID}"
-
-              echo "This is the bucket: "
-              echo udapeople-${OldWorkflowID}
-
-              echo "This is the bucket url: "
-              echo "s3://udapeople-${OldWorkflowID}"
-            fi
-
-#              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
-#
-#              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-#              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-#            fi
-#    - destroy-environment
-#    - revert-migration
-#-----
-
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name "udapeople-cloudfront" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
+      - destroy-environment
+      - revert-migrations 
 workflows:
   default:
     jobs:
@@ -392,4 +387,6 @@ workflows:
           requires: [deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
 #----
