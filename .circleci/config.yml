@@ -1,4 +1,8 @@
 version: 2.1
+orbs:
+    node: circleci/node@4.0
+    slack: circleci/slack@4.1.1
+#    jq: circleci/jq@2.2.0
 
 commands:
   destroy-environment:
@@ -153,7 +157,7 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}
      
       - destroy-environment
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
 
@@ -196,7 +200,7 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt main.yml
       - destroy-environment
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
 
@@ -216,7 +220,7 @@ jobs:
           command: |
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "true" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID}
       - destroy-environment
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
 
@@ -255,7 +259,7 @@ jobs:
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
 
@@ -309,7 +313,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy.yml
       - destroy-environment
       - revert-migration
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
     # dist package.json package-lock.json tsconfig.spec.json tsconfig.json webpack.config.js
@@ -393,7 +397,7 @@ jobs:
             aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name "udapeople-cloudfront" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
-       - slack/notify:
+      - slack/notify:
           event: fail
           template: basic_fail_1
        
@@ -406,10 +410,10 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-#      - scan-frontend:
-#          requires: [test-frontend]
-#      - scan-backend:
-#          requires: [test-backend]
+      - scan-frontend:
+          requires: [test-frontend]
+      - scan-backend:
+          requires: [test-backend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend]
           filters:
