@@ -320,17 +320,9 @@ jobs:
       - run:
           name: old stack workflow id / remove old stack and files
           command: |
-          ##    export OldWorkflowID=$(aws cloudformation describe-stacks --stack-name cloudfront --query Stacks[0].Outputs[].OutputValue --output text)
-          ##  echo Old Workflow Id: "$(cat ~/id.txt)"
-           ## echo Current Workflow Id: "${CIRCLE_WORKFLOW_ID}"
-       ##     if [ "${OldWorkflowID}" != "${CIRCLE_WORKFLOW_ID}" ]
-      ##   then 
             aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
             aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
             aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
-      ##    else
-      ##      echo "no destroy"
-      ##    fi
 
   cloudfront-update:
     docker:
@@ -344,9 +336,11 @@ jobs:
             pip install awscli
       - add_ssh_keys:
           fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
-      - run: |
+      - run: 
+          name: get the old workflow-id
+          command: |
            aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
-       - persist_to_workspace:
+      - persist_to_workspace:
           root: ~/
           paths:
             - id.txt
@@ -355,7 +349,8 @@ jobs:
           command: |
             aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name "udapeople-cloudfront" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
-      - revert-migrations 
+      - revert-migration
+       
 workflows:
   default:
     jobs:
