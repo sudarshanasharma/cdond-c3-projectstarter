@@ -320,9 +320,11 @@ jobs:
       - run:
           name: old stack workflow id / remove old stack and files
           command: |
-            aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
-            aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
-            aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
+            if $(cat ~/id.txt) != "NONE" ; then
+                aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
+                aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
+                aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
+            fi
 
   cloudfront-update:
     docker:
@@ -338,8 +340,12 @@ jobs:
           fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
       - run: 
           name: get the old workflow-id
-          command: |
-           aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
+          command: | 
+           if aws cloudformation describe-stacks --region us-west-2 --stack-name udapeople-cloudfront ; then
+              aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
+           else
+              echo -e "NONE" > ~/id.txt
+           fi   
       - persist_to_workspace:
           root: ~/
           paths:
