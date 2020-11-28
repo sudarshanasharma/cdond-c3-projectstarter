@@ -220,11 +220,16 @@ jobs:
           command: |
             npm install webpack-dev-server -g
             cd frontend
+            cat .env
             npm install
             npm run build
             npm audit fix --audit-level=critical --force
             cd dist
-            aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
+            aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - frontend
       - destroy-environment
       - revert-migration
 
