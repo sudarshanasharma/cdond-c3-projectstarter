@@ -222,8 +222,9 @@ jobs:
             cd frontend
             npm install
             npm run build
+            npm audit fix --audit-level=critical --force
             cd dist
-            aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --delete
+            aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
       - destroy-environment
       - revert-migration
 
@@ -376,14 +377,14 @@ workflows:
                 - non-prod
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
+      - deploy-backend:
           requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [deploy-backend]
       - deploy-frontend:
           requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
       - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+          requires: [deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
 #----
