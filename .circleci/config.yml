@@ -40,6 +40,9 @@ jobs:
             cd frontend
             npm i
             npm run build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   build-backend:
     docker:
@@ -52,6 +55,9 @@ jobs:
             cd backend
             npm i
             npm run build
+      - slack/notify:
+           event: fail
+           template: basic_fail_1
 
   test-frontend:
     docker:
@@ -70,6 +76,9 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
       - store_test_results:
           path: /tmp/reports/junit/
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-backend:
     docker:
@@ -87,6 +96,9 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
       - store_test_results:
           path: /tmp/reports/junit/
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   scan-frontend:
     docker:
@@ -99,6 +111,9 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   scan-backend:
     docker:
@@ -111,6 +126,9 @@ jobs:
             cd backend
             npm i
             npm audit fix --audit-level=critical --force
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   deploy-infrastructure:
     docker:
@@ -135,6 +153,9 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "$ARN" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}
      
       - destroy-environment
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   configure-infrastructure:
     docker:
@@ -175,6 +196,9 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt main.yml
       - destroy-environment
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   run-migrations:
     docker:
@@ -192,6 +216,9 @@ jobs:
           command: |
             curl -H "Content-Type: text/plain" -H "token: 4034357b-6ac3-46b0-bdbf-84a96db25691" --request PUT --data "true" https://api.memstash.io/values/${CIRCLE_WORKFLOW_ID}
       - destroy-environment
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   deploy-frontend:
     docker:
@@ -228,6 +255,9 @@ jobs:
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   deploy-backend:
     docker:
@@ -279,6 +309,9 @@ jobs:
             ansible-playbook -i inventory.txt deploy.yml
       - destroy-environment
       - revert-migration
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
     # dist package.json package-lock.json tsconfig.spec.json tsconfig.json webpack.config.js
 
   smoke-test:
@@ -306,6 +339,9 @@ jobs:
             else
               return 1
             fi
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   cleanup:
     docker:
@@ -320,11 +356,14 @@ jobs:
       - run:
           name: old stack workflow id / remove old stack and files
           command: |
-            if $(cat ~/id.txt) != "NONE" ; then
+            if $(cat ~/id.txt) ; then
                 aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
                 aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
                 aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
             fi
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   cloudfront-update:
     docker:
@@ -343,8 +382,6 @@ jobs:
           command: | 
            if aws cloudformation describe-stacks --region us-west-2 --stack-name udapeople-cloudfront ; then
               aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
-           else
-              echo -e "NONE" > ~/id.txt
            fi   
       - persist_to_workspace:
           root: ~/
@@ -356,6 +393,9 @@ jobs:
             aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name "udapeople-cloudfront" --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
+       - slack/notify:
+          event: fail
+          template: basic_fail_1
        
 workflows:
   default:
