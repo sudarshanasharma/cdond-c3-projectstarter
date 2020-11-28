@@ -20,6 +20,11 @@
   become: yes
   shell: |
    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+   
+- name: "open the server2"
+  become: yes
+  shell: |
+   sudo apt-get install -y nodejs
 
 - name: "copy backend folder"
   become: true
