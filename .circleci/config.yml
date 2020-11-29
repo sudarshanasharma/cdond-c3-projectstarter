@@ -357,7 +357,7 @@ jobs:
       - run:
           name: old stack workflow id / remove old stack and files
           command: |
-             aws s3 rb s3://udapeople-(cat ~/id.txt) --force
+             aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
              aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
              aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
   
