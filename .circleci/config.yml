@@ -357,15 +357,10 @@ jobs:
       - run:
           name: old stack workflow id / remove old stack and files
           command: |
-            if $(cat ~/id.txt) ; then
-                aws s3 rb s3://udapeople-$(cat ~/id.txt) --force
-                aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
-                aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
-            fi
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
+             aws s3 rb s3://udapeople-(cat ~/id.txt) --force
+             aws cloudformation delete-stack --stack-name "bestk-/$(cat ~/id.txt)"
+             aws cloudformation delete-stack --stack-name "festk-/$(cat ~/id.txt)"
+  
   cloudfront-update:
     docker:
       - image: python:3.7-alpine3.11
