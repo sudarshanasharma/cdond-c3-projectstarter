@@ -378,16 +378,16 @@ jobs:
             pip install awscli
       - add_ssh_keys:
           fingerprints: ["4b:b1:46:26:19:82:2a:5a:6e:f1:02:c0:ef:09:db:fd"]
-  #    - run: 
-  #        name: get the old workflow-id
-  #        command: | 
-  #         if aws cloudformation describe-stacks --region us-west-2 --stack-name udapeople-cloudfront ; then
-  #            aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
-  #         fi   
-  #    - persist_to_workspace:
-  #        root: ~/
-  #        paths:
-  #          - id.txt
+      - run: 
+          name: get the old workflow-id
+          command: | 
+           if aws cloudformation describe-stacks --region us-west-2 --stack-name udapeople-cloudfront ; then
+              aws cloudformation describe-stacks --stack-name udapeople-cloudfront --query Stacks[0].Outputs[].OutputValue --output text > ~/id.txt
+           fi   
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - id.txt
       - run:
           name: Update the cloudfront
           command: |
@@ -442,7 +442,7 @@ workflows:
       - cloudfront-update:
           requires: [smoke-test]
           context: udapeople
-      #- cleanup:
-      #    requires: [cloudfront-update]
-      #    context: udapeople
+      - cleanup:
+          requires: [cloudfront-update]
+          context: udapeople
 #----
