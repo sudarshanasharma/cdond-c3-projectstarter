@@ -44,6 +44,7 @@ jobs:
             cd frontend
             npm cache clean --force
             npm i
+            npm install moment
             npm run build
       - slack/notify:
           event: fail
@@ -60,6 +61,7 @@ jobs:
             cd backend
             npm cache clean --force
             npm i
+            npm install moment
             npm run build
       - slack/notify:
            event: fail
