@@ -1,3 +1,4 @@
+const moment = require('moment');
 import { EmployeeRepository } from '../../repositories/employees.repository';
 import { EmployeeBirthDateUpdater } from './employee-birthdate-updater.handler';
 import { UpdateEmployeeBirthdate } from '../update-employee-birthdate.command';
