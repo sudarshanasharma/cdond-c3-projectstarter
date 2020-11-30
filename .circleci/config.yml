@@ -42,6 +42,7 @@ jobs:
           name: Build Frontend Code
           command: |
             cd frontend
+            npm cache clean --force
             npm i
             npm run build
       - slack/notify:
@@ -57,6 +58,7 @@ jobs:
           name: Build Backend Code
           command: |
             cd backend
+            npm cache clean --force
             npm i
             npm run build
       - slack/notify:
