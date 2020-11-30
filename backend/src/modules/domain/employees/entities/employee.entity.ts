@@ -120,6 +120,7 @@ export enum SalaryType {
   HOURLY = 'hourly',
 }
 
+const moment = require('moment');
 export function getDateFromString(date: string): Date {
   return moment(date).format('MM-DD-YYYY');
 }
