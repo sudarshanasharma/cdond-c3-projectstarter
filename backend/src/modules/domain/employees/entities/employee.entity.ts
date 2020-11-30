@@ -1,4 +1,5 @@
-import * as moment from 'moment-timezone';
+//import * as moment from 'moment-timezone';
+const moment = require('moment');
 import { AggregateRoot } from '../../../common/entities';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { CreateEmployee } from '../commands/create-employee.command';
@@ -120,7 +121,7 @@ export enum SalaryType {
   HOURLY = 'hourly',
 }
 
-const moment = require('moment');
+
 export function getDateFromString(date: string): Date {
   return moment(date).format('MM-DD-YYYY');
 }
