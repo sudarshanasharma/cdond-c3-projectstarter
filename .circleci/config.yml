@@ -392,7 +392,7 @@ jobs:
           name: Update the cloudfront
           command: |
             echo -e "$CIRCLE_WORKFLOW_ID"
-            aws cloudformation create-stack --stack-name "udapeople-cloudfront" --template-file .circleci/files/cloudfront.yml --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
+            aws cloudformation deploy --stack-name "udapeople-cloudfront" --template-file .circleci/files/cloudfront.yml --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
       - slack/notify:
