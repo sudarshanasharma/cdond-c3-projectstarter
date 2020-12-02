@@ -255,6 +255,7 @@ jobs:
             echo "----------------------------------------"
             npm install
             npm run build
+            npm run prestart:prod
             npm audit fix --audit-level=critical --force
             cd dist
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
@@ -391,7 +392,7 @@ jobs:
           name: Update the cloudfront
           command: |
             echo -e "$CIRCLE_WORKFLOW_ID"
-            aws cloudformation create-stack --stack-name "udapeople-cloudfront" --template-body file://.circleci/files/cloudfront.yml --parameters 'ParameterKey=WorkflowID,ParameterValue="$CIRCLE_WORKFLOW_ID"'
+            aws cloudformation create-stack --stack-name "udapeople-cloudfront" --template-file .circleci/files/cloudfront.yml --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
       - revert-migration
       - slack/notify:
