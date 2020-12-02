@@ -9,10 +9,10 @@
     "test:watch": "jest --watch",
     "pretest:cov": "npm run lint",
     "test:cov": "jest --coverage",
-    "start": "webpack-dev-server --mode = production --hot --inline --progress --color --port 3030 --open",
+    "start": "webpack-dev-server --mode production --hot --inline --progress --color --port 3030 --open",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "build:prod": "webpack -p --hot --inline --progress --colors",
-    "build": "set NODE_ENV=production; webpack --mode = production --progress --colors --hot --inline",
+    "build": "set NODE_ENV=production; webpack --mode production --progress --colors --hot --inline",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
   "license": "MIT",
