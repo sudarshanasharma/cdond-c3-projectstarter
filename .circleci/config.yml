@@ -255,7 +255,7 @@ jobs:
             echo "----------------------------------------"
             npm install
             npm run build
-            npm run prestart:prod
+            
             npm audit fix --audit-level=critical --force
             cd dist
             aws s3 sync . s3://udapeople-"${CIRCLE_WORKFLOW_ID}"
@@ -304,6 +304,7 @@ jobs:
 
             npm i
             npm run build
+            npm run prestart:prod
 
             rm -rf node_modules 
             rm -rf dist
